@@ -1,0 +1,6 @@
+﻿services:
+  echofix:
+    image: echofix
+    build:
+      context: .
+      dockerfile: Dockerfile
