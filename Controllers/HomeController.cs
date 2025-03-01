@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using EchoFix.Models;
+using Microsoft.Extensions.Logging;
 
 namespace EchoFix.Controllers;
 
