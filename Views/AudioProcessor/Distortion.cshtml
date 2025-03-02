@@ -1,0 +1,193 @@
+@{
+    ViewData["Title"] = "Distortion Reducer";
+}
+
+<div class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
+    <div class="relative py-3 sm:max-w-xl sm:mx-auto">
+        <div class="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
+            <div class="max-w-md mx-auto">
+                <div class="divide-y divide-gray-200">
+                    <div class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
+                        <h1 class="text-3xl font-bold text-indigo-600 mb-8">Distortion Reducer</h1>
+                        
+                        <form id="uploadForm" class="space-y-6" enctype="multipart/form-data">
+                            <!-- Zone de drop -->
+                            <div class="flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 transition-colors duration-200">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                        <path d="M24 32V16m0 0l-8 8m8-8l8 8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M3 16.5v13A2.5 2.5 0 005.5 32h37a2.5 2.5 0 002.5-2.5v-13" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
+                                            <span>Upload a file</span>
+                                            <input id="file-upload" name="file" type="file" class="sr-only" accept=".wav" required>
+                                        </label>
+                                        <p class="pl-1">or drag and drop</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">WAV files only</p>
+                                </div>
+                            </div>
+
+                            <!-- Contrôles de distorsion -->
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        Threshold
+                                        <span id="thresholdValue" class="ml-2 text-indigo-600">0.8</span>
+                                    </label>
+                                    <input type="range" 
+                                           id="threshold" 
+                                           name="threshold" 
+                                           min="0.1" 
+                                           max="1.0" 
+                                           step="0.1" 
+                                           value="0.8"
+                                           class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        Ratio
+                                        <span id="ratioValue" class="ml-2 text-indigo-600">2.0</span>
+                                    </label>
+                                    <input type="range" 
+                                           id="ratio" 
+                                           name="ratio" 
+                                           min="1.0" 
+                                           max="10.0" 
+                                           step="0.5" 
+                                           value="2.0"
+                                           class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                            </div>
+
+                            <!-- Bouton de traitement -->
+                            <button type="submit" 
+                                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Process Audio
+                            </button>
+                        </form>
+
+                        <!-- Zone de statut -->
+                        <div id="status" class="hidden mt-4 p-4 rounded-md">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p id="statusMessage" class="text-sm font-medium text-gray-900"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('uploadForm');
+            const fileInput = document.getElementById('file-upload');
+            const thresholdSlider = document.getElementById('threshold');
+            const thresholdValue = document.getElementById('thresholdValue');
+            const ratioSlider = document.getElementById('ratio');
+            const ratioValue = document.getElementById('ratioValue');
+            const status = document.getElementById('status');
+            const statusMessage = document.getElementById('statusMessage');
+            const dropZone = document.querySelector('.border-dashed');
+
+            // Mise à jour des valeurs des sliders
+            thresholdSlider.addEventListener('input', function() {
+                thresholdValue.textContent = this.value;
+            });
+
+            ratioSlider.addEventListener('input', function() {
+                ratioValue.textContent = this.value;
+            });
+
+            // Gestion du drag and drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight(e) {
+                dropZone.classList.add('border-indigo-500', 'bg-indigo-50');
+            }
+
+            function unhighlight(e) {
+                dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
+            }
+
+            dropZone.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                fileInput.files = files;
+            }
+
+            // Gestion du formulaire
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('threshold', thresholdSlider.value);
+                formData.append('ratio', ratioSlider.value);
+
+                try {
+                    status.classList.remove('hidden');
+                    status.classList.remove('bg-red-50');
+                    status.classList.add('bg-blue-50');
+                    statusMessage.textContent = 'Processing audio file...';
+
+                    const response = await fetch('/AudioProcessor/ProcessDistortion', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'processed.wav';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+
+                        status.classList.remove('bg-blue-50');
+                        status.classList.add('bg-green-50');
+                        statusMessage.textContent = 'Audio processed successfully!';
+                    } else {
+                        throw new Error('Processing failed');
+                    }
+                } catch (error) {
+                    status.classList.remove('bg-blue-50');
+                    status.classList.add('bg-red-50');
+                    statusMessage.textContent = 'Error processing audio file. Please try again.';
+                }
+            });
+        });
+    </script>
+}

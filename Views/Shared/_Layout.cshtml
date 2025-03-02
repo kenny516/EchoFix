@@ -5,24 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>@ViewData["Title"] - EchoFix</title>
     <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true"/>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body class="min-h-screen bg-gray-100">
-<header>
-    <nav class="bg-white shadow-lg">
+<header class="sticky top-0 z-50">
+    <nav class="shadow-xl bg-gradient-to-r from-blue-600 to-indigo-700">
         <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
-                <div class="flex">
-                    <a class="flex items-center flex-shrink-0 text-xl font-bold text-gray-800" asp-controller="Home" asp-action="Index">
+                <div class="flex items-center">
+                    <a class="flex items-center flex-shrink-0 text-xl font-bold text-white transition-transform duration-300 transform hover:scale-105" asp-controller="AudioProcessor" asp-action="Index">
+                        <i class="mr-2 fas fa-wave-square"></i>
                         EchoFix
                     </a>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a asp-controller="Home" asp-action="Index" class="px-3 py-2 text-sm font-medium rounded-md hover:text-gray-700">
-                            Accueil
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-4">
+                        <a asp-controller="AudioProcessor" asp-action="Index" 
+                           class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ease-in-out hover:bg-white/20 @(ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "text-white bg-white/10" : "text-gray-100")">
+                            <i class="mr-1 fas fa-volume-up"></i> Amplification
                         </a>
-                        <a asp-controller="Home" asp-action="Privacy" class="px-3 py-2 text-sm font-medium rounded-md hover:text-gray-700">
-                            Privacy
+                        <a asp-controller="AudioProcessor" asp-action="Distortion" 
+                           class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ease-in-out hover:bg-white/20 @(ViewContext.RouteData.Values["Action"].ToString() == "Distortion" ? "text-white bg-white/10" : "text-gray-100")">
+                            <i class="mr-1 fas fa-filter"></i> Distortion Reducer
+                        </a>
+                        <a asp-controller="AudioProcessor" asp-action="Noise" 
+                           class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ease-in-out hover:bg-white/20 @(ViewContext.RouteData.Values["Action"].ToString() == "Noise" ? "text-white bg-white/10" : "text-gray-100")">
+                            <i class="mr-1 fas fa-wind"></i> Noise Reducer
+                        </a>
+                        <a asp-controller="AudioProcessor" asp-action="Combined" 
+                           class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ease-in-out hover:bg-white/20 @(ViewContext.RouteData.Values["Action"].ToString() == "Combined" ? "text-white bg-white/10" : "text-gray-100")">
+                            <i class="mr-1 fas fa-magic"></i> Combined Processing
                         </a>
                     </div>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="flex items-center sm:hidden">
+                    <button type="button" onclick="toggleMobileMenu()" class="inline-flex items-center justify-center p-2 text-white rounded-md hover:bg-white/20">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Mobile menu -->
+            <div id="mobileMenu" class="hidden pb-3 sm:hidden">
+                <div class="space-y-1">
+                    <a asp-controller="AudioProcessor" asp-action="Index" 
+                       class="block px-4 py-2 text-sm font-medium rounded-md text-white hover:bg-white/20 @(ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "bg-white/10" : "")">
+                        <i class="mr-1 fas fa-volume-up"></i> Amplification
+                    </a>
+                    <a asp-controller="AudioProcessor" asp-action="Distortion" 
+                       class="block px-4 py-2 text-sm font-medium rounded-md text-white hover:bg-white/20 @(ViewContext.RouteData.Values["Action"].ToString() == "Distortion" ? "bg-white/10" : "")">
+                        <i class="mr-1 fas fa-filter"></i> Distortion Reducer
+                    </a>
+                    <a asp-controller="AudioProcessor" asp-action="Noise" 
+                       class="block px-4 py-2 text-sm font-medium rounded-md text-white hover:bg-white/20 @(ViewContext.RouteData.Values["Action"].ToString() == "Noise" ? "bg-white/10" : "")">
+                        <i class="mr-1 fas fa-wind"></i> Noise Reducer
+                    </a>
+                    <a asp-controller="AudioProcessor" asp-action="Combined" 
+                       class="block px-4 py-2 text-sm font-medium rounded-md text-white hover:bg-white/20 @(ViewContext.RouteData.Values["Action"].ToString() == "Combined" ? "bg-white/10" : "")">
+                        <i class="mr-1 fas fa-magic"></i> Combined Processing
+                    </a>
                 </div>
             </div>
         </div>
@@ -36,10 +75,17 @@
 <footer class="mt-8 bg-white shadow">
     <div class="px-4 py-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <p class="text-sm text-center text-gray-500">
-            &copy; 2025 - EchoFix - <a asp-controller="Home" asp-action="Privacy" class="hover:text-gray-700">Privacy</a>
+            &copy; 2025 - EchoFix
         </p>
     </div>
 </footer>
+
+<script>
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    mobileMenu.classList.toggle('hidden');
+}
+</script>
 
 @await RenderSectionAsync("Scripts", required: false)
 </body>
