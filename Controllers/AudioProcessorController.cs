@@ -150,6 +150,22 @@ public class AudioProcessorController : Controller
         }
     }
     
-}
+    [HttpPost]
+    public async Task<IActionResult> NoiseAudio(IFormFile? file, float cutoffFrequency, float q)
+    {
+        var validationResult = await _fileUtils.ValidateAudioFile(file);
+        if (validationResult != null) return validationResult;
+        try
+        {
+            var (inputPath, _) = _fileUtils.CreateTempFilePaths("combined");
 
-// Classe utilitaire pour la gestion des fichiers temporaires
+            await _fileUtils.SaveUploadedFile(file!, inputPath);
+            var processedAudio = await _audioService.NoiseAudio(inputPath,cutoffFrequency);
+            return File(processedAudio, AudioContentType, "process_combined.wav");
+        }
+        catch (Exception ex)
+        {
+            return _fileUtils.HandleProcessingError(ex);
+        }
+    }
+}

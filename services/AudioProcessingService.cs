@@ -134,24 +134,24 @@ public class AudioProcessingService
             }
         }
     }
-    // public async Task<byte[]> NoiseAudio(string inputPath, float threshold, float ratio)
-    // {
-    //     var outputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}_distortion.wav");
-    //     try
-    //     {
-    //         AudioFile audioFile = new AudioFile(inputPath);
-    //         (var samples, var readSamples, WaveFormat waveFormat) = audioFile.ReadSamples();
-    //         FixAudio.AntiDistort(samples, readSamples, threshold, ratio);
-    //         AudioFile.WriteSamplesToWav(samples, readSamples, outputPath, waveFormat);
-    //         return await File.ReadAllBytesAsync(outputPath);
-    //     }
-    //     finally
-    //     {
-    //         if (File.Exists(outputPath))
-    //         {
-    //             File.Delete(outputPath);
-    //         }
-    //     }
-    // }
+    public async Task<byte[]> NoiseAudio(string inputPath, float cutoffFrequency)
+    {
+        var outputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}_noise.wav");
+        try
+        {
+            AudioFile audioFile = new AudioFile(inputPath);
+            (var samples, var readSamples, WaveFormat waveFormat) = audioFile.ReadSamples();
+            FixAudio.AntiNoise(samples, readSamples, cutoffFrequency, waveFormat.SampleRate);
+            AudioFile.WriteSamplesToWav(samples, readSamples, outputPath, waveFormat);
+            return await File.ReadAllBytesAsync(outputPath);
+        }
+        finally
+        {
+            if (File.Exists(outputPath))
+            {
+                File.Delete(outputPath);
+            }
+        }
+    }
     
 }

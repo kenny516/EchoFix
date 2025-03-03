@@ -36,4 +36,27 @@ public class FixAudio
             samples[i] = sample;
         }
     }
+    
+    /// <summary>
+    /// args: samples, count, cutoffFrequency, sampleRate
+    /// samples: tableau d'échantillons
+    /// count: nombre d'échantillons à traiter
+    /// cutoffFrequency: fréquence de coupure du filtre passe-bas
+    /// sampleRate: fréquence d'échantillonnage
+    /// </summary>
+    public static void AntiNoise(float[] samples, int count, float cutoffFrequency, float sampleRate)
+    {
+        // Calcul de l'alpha pour le filtre RC
+        float dt = 1.0f / sampleRate;
+        float rc = 1.0f / (2 * (float)Math.PI * cutoffFrequency);
+        float alpha = dt / (rc + dt);
+
+        // Filtre passe-bas : y[n] = alpha * x[n] + (1 - alpha) * y[n-1]
+        float previous = samples[0];
+        for (int i = 1; i < count; i++)
+        {
+            samples[i] = alpha * samples[i] + (1 - alpha) * previous;
+            previous = samples[i];
+        }
+    }
 }
