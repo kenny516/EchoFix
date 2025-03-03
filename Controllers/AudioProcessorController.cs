@@ -6,12 +6,12 @@ namespace EchoFix.Controllers;
 
 public class AudioProcessorController : Controller
 {
-    private readonly IAudioProcessingService _audioService;
+    private readonly AudioProcessingService _audioService;
     private readonly IAudioFileUtils _fileUtils;
     private const string AudioContentType = "audio/wav";
 
     public AudioProcessorController(
-        IAudioProcessingService audioService,
+        AudioProcessingService audioService,
         IAudioFileUtils fileUtils)
     {
         _audioService = audioService;
@@ -111,6 +111,28 @@ public class AudioProcessorController : Controller
             return _fileUtils.HandleProcessingError(ex);
         }
     }
+    
+    [HttpPost]
+    public async Task<IActionResult> Process(IFormFile? file, float amplificationLevel)
+    {
+        var validationResult = await _fileUtils.ValidateAudioFile(file);
+        if (validationResult != null) return validationResult;
+        try
+        {
+            var (inputPath, _) = _fileUtils.CreateTempFilePaths("combined");
+            await using (var tempFile = new TempFile(inputPath))
+            {
+                await _fileUtils.SaveUploadedFile(file!, inputPath);
+                var processedAudio = await _audioService.ProcessAudioMaison(inputPath,amplificationLevel) ;
+                return File(processedAudio, AudioContentType, "process_combined.wav");
+            }
+        }
+        catch (Exception ex)
+        {
+            return _fileUtils.HandleProcessingError(ex);
+        }
+    }
+    
 }
 
 // Classe utilitaire pour la gestion des fichiers temporaires
