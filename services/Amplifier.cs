@@ -10,6 +10,7 @@ public class Amplifier
     {
         using (var reader = new AudioFileReader(inputPath))
         {
+            
             var volumeProvider = new VolumeSampleProvider(reader)
             {
                 Volume = amplificationFactor

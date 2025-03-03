@@ -1,17 +1,10 @@
+using EchoFix.Models;
 using Microsoft.AspNetCore.Mvc;
 using NAudio.Wave;
 
 namespace EchoFix.services;
 
-public interface IAudioProcessingService
-{
-    Task<byte[]> ProcessAmplification(string inputPath, float amplificationLevel);
-    Task<byte[]> ProcessDistortion(string inputPath, float threshold, float ratio);
-    Task<byte[]> ProcessNoiseReduction(string inputPath, float cutoffFrequency, float q);
-    Task<byte[]> ProcessCombined(string inputPath, float cutoffFrequency, float q, float threshold, float ratio, float amplificationLevel);
-}
-
-public class AudioProcessingService : IAudioProcessingService
+public class AudioProcessingService
 {
     public async Task<byte[]> ProcessAmplification(string inputPath, float amplificationLevel)
     {
@@ -63,7 +56,8 @@ public class AudioProcessingService : IAudioProcessingService
         }
     }
 
-    public async Task<byte[]> ProcessCombined(string inputPath, float cutoffFrequency, float q, float threshold, float ratio, float amplificationLevel)
+    public async Task<byte[]> ProcessCombined(string inputPath, float cutoffFrequency, float q, float threshold,
+        float ratio, float amplificationLevel)
     {
         var noisePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}_noise.wav");
         var distortionPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}_distortion.wav");
@@ -101,4 +95,63 @@ public class AudioProcessingService : IAudioProcessingService
             }
         }
     }
+
+    /// implementation 
+    public async Task<byte[]> AmplifyAudio(string inputPath, float amplificationLevel)
+    {
+        var outputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}_amplified.wav");
+        try
+        {
+            AudioFile audioFile = new AudioFile(inputPath);
+            (var samples, var readSamples, WaveFormat waveFormat) = audioFile.ReadSamples();
+            FixAudio.Amplify(samples, readSamples, amplificationLevel);
+            AudioFile.WriteSamplesToWav(samples, readSamples, outputPath, waveFormat);
+            return await File.ReadAllBytesAsync(outputPath);
+        }
+        finally
+        {
+            if (File.Exists(outputPath))
+                File.Delete(outputPath);
+        }
+    }
+
+    public async Task<byte[]> DistortionAudio(string inputPath, float threshold, float ratio)
+    {
+        var outputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}_distortion.wav");
+        try
+        {
+            AudioFile audioFile = new AudioFile(inputPath);
+            (var samples, var readSamples, WaveFormat waveFormat) = audioFile.ReadSamples();
+            FixAudio.AntiDistort(samples, readSamples, threshold, ratio);
+            AudioFile.WriteSamplesToWav(samples, readSamples, outputPath, waveFormat);
+            return await File.ReadAllBytesAsync(outputPath);
+        }
+        finally
+        {
+            if (File.Exists(outputPath))
+            {
+                File.Delete(outputPath);
+            }
+        }
+    }
+    public async Task<byte[]> NoiseAudio(string inputPath, float cutoffFrequency)
+    {
+        var outputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}_noise.wav");
+        try
+        {
+            AudioFile audioFile = new AudioFile(inputPath);
+            (var samples, var readSamples, WaveFormat waveFormat) = audioFile.ReadSamples();
+            FixAudio.AntiNoise(samples, readSamples, cutoffFrequency, waveFormat.SampleRate);
+            AudioFile.WriteSamplesToWav(samples, readSamples, outputPath, waveFormat);
+            return await File.ReadAllBytesAsync(outputPath);
+        }
+        finally
+        {
+            if (File.Exists(outputPath))
+            {
+                File.Delete(outputPath);
+            }
+        }
+    }
+    
 }

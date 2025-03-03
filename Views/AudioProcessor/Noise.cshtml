@@ -51,7 +51,7 @@
                                         Q Factor
                                         <span id="qValue" class="ml-2 text-indigo-600">1.0</span>
                                     </label>
-                                    <input type="range" 
+                                    <input type="hidden" 
                                            id="q" 
                                            name="q" 
                                            min="0.1" 
@@ -160,7 +160,7 @@
                     status.classList.add('bg-blue-50');
                     statusMessage.textContent = 'Processing audio file...';
 
-                    const response = await fetch('/AudioProcessor/ProcessNoise', {
+                    const response = await fetch('/AudioProcessor/NoiseAudio', {
                         method: 'POST',
                         body: formData
                     });
