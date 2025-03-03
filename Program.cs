@@ -4,7 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddScoped<IAudioProcessingService, AudioProcessingService>();
+builder.Services.AddScoped<AudioProcessingService>();
 builder.Services.AddScoped<IAudioFileUtils, AudioFileUtils>();
 
 var app = builder.Build();
