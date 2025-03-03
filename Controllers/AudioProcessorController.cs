@@ -111,21 +111,38 @@ public class AudioProcessorController : Controller
             return _fileUtils.HandleProcessingError(ex);
         }
     }
-    
+    // implementation
     [HttpPost]
-    public async Task<IActionResult> Process(IFormFile? file, float amplificationLevel)
+    public async Task<IActionResult> AmplifyAudio(IFormFile? file, float amplificationLevel)
     {
         var validationResult = await _fileUtils.ValidateAudioFile(file);
         if (validationResult != null) return validationResult;
         try
         {
             var (inputPath, _) = _fileUtils.CreateTempFilePaths("combined");
-            await using (var tempFile = new TempFile(inputPath))
-            {
+
                 await _fileUtils.SaveUploadedFile(file!, inputPath);
-                var processedAudio = await _audioService.ProcessAudioMaison(inputPath,amplificationLevel) ;
+                var processedAudio = await _audioService.AmplifyAudio(inputPath,amplificationLevel) ;
                 return File(processedAudio, AudioContentType, "process_combined.wav");
-            }
+        }
+        catch (Exception ex)
+        {
+            return _fileUtils.HandleProcessingError(ex);
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DistortionAudio(IFormFile? file, float threshold, float ratio)
+    {
+        var validationResult = await _fileUtils.ValidateAudioFile(file);
+        if (validationResult != null) return validationResult;
+        try
+        {
+            var (inputPath, _) = _fileUtils.CreateTempFilePaths("combined");
+
+                await _fileUtils.SaveUploadedFile(file!, inputPath);
+                var processedAudio = await _audioService.DistortionAudio(inputPath,threshold,ratio);
+                return File(processedAudio, AudioContentType, "process_combined.wav");
         }
         catch (Exception ex)
         {

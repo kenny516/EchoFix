@@ -160,7 +160,7 @@
                     status.classList.add('bg-blue-50');
                     statusMessage.textContent = 'Processing audio file...';
 
-                    const response = await fetch('/AudioProcessor/ProcessDistortion', {
+                    const response = await fetch('/AudioProcessor/DistortionAudio', {
                         method: 'POST',
                         body: formData
                     });

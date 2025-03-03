@@ -40,4 +40,17 @@ public class AudioFile
             writer.Write(buffer, 0, buffer.Length);
         }
     }
+    
+    
+    public (float[],int,WaveFormat) ReadSamples()
+    {
+        using (var reader = new AudioFileReader(FilePath))
+        {
+            // Lire tous les échantillons dans un tableau de float.
+            int sampleCount = (int)(reader.Length / sizeof(float));
+            float[] samples = new float[sampleCount];
+            int readSamples = reader.Read(samples, 0, sampleCount);
+            return (samples,readSamples,reader.WaveFormat);
+        }
+    }
 }
