@@ -23,6 +23,7 @@ public class FixAudio
     /// samples: tableau d'échantillons
     /// count: nombre d'échantillons à traiter
     /// threshold: seuil de distorsion
+    /// ratio: ratio de distorsion
     /// </summary>
     public static void AntiDistort(float[] samples, int count, float threshold, float ratio)
     {
@@ -58,6 +59,52 @@ public class FixAudio
         {
             samples[i] = alpha * samples[i] + (1 - alpha) * previous;
             previous = samples[i];
+        }
+    }
+
+    /// <summary>
+    /// Réduit le bruit en utilisant un fichier de référence de bruit
+    /// sourceSamples: échantillons du fichier audio source
+    /// noiseSamples: échantillons du fichier de référence de bruit
+    /// count: nombre d'échantillons à traiter (doit être le minimum entre les deux tableaux)
+    /// noiseReductionFactor: facteur de réduction du bruit (entre 0 et 1)
+    /// </summary>
+    public static void AntiNoiseWithReference(float[] sourceSamples, float[] noiseSamples, int count, float noiseReductionFactor = 0.8f)
+    {
+        // Vérification des paramètres
+        if (sourceSamples == null || noiseSamples == null)
+            throw new ArgumentNullException("Les tableaux d'échantillons ne peuvent pas être null");
+            
+        if (count <= 0 || count > Math.Min(sourceSamples.Length, noiseSamples.Length))
+            throw new ArgumentOutOfRangeException("count", "Le nombre d'échantillons est invalide");
+            
+        if (noiseReductionFactor < 0 || noiseReductionFactor > 1)
+            throw new ArgumentOutOfRangeException("noiseReductionFactor", "Le facteur de réduction doit être entre 0 et 1");
+
+        // Soustraction spectrale simple
+        for (int i = 0; i < count; i++)
+        {
+            // Soustrait le bruit pondéré du signal source
+            sourceSamples[i] -= noiseSamples[i] * noiseReductionFactor;
+            
+            // Limite l'amplitude pour éviter la distorsion
+            sourceSamples[i] = Math.Clamp(sourceSamples[i], -1.0f, 1.0f);
+        }
+        
+        // Normalisation du signal
+        float maxAmplitude = 0;
+        for (int i = 0; i < count; i++)
+        {
+            maxAmplitude = Math.Max(maxAmplitude, Math.Abs(sourceSamples[i]));
+        }
+        
+        if (maxAmplitude > 1.0f)
+        {
+            float normalizationFactor = 1.0f / maxAmplitude;
+            for (int i = 0; i < count; i++)
+            {
+                sourceSamples[i] *= normalizationFactor;
+            }
         }
     }
 }
