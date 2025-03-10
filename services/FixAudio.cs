@@ -3,7 +3,7 @@ namespace EchoFix.services;
 public class FixAudio
 {
     /// <summary>
-    /// args: samples, count, factor
+    /// argument: samples, count, factor
     /// samples: tableau d'échantillons
     /// count: nombre d'échantillons à traiter
     /// factor: facteur d'amplification
@@ -13,13 +13,13 @@ public class FixAudio
         for (int i = 0; i < count; i++)
         {
             samples[i] *= factor;
-            // Empêcher le clipping.
             samples[i] = Math.Clamp(samples[i], -1.0f, 1.0f);
+            
         }
     }
     
     /// <summary>
-    /// args: samples, count, threshold, ratio
+    /// argument: samples, count, threshold, ratio
     /// samples: tableau d'échantillons
     /// count: nombre d'échantillons à traiter
     /// threshold: seuil de distorsion
@@ -38,7 +38,7 @@ public class FixAudio
     }
     
     /// <summary>
-    /// args: samples, count, cutoffFrequency, sampleRate
+    /// argument: samples, count, cutoffFrequency, sampleRate
     /// samples: tableau d'échantillons
     /// count: nombre d'échantillons à traiter
     /// cutoffFrequency: fréquence de coupure du filtre passe-bas
@@ -50,6 +50,7 @@ public class FixAudio
         float dt = 1.0f / sampleRate;
         float rc = 1.0f / (2 * (float)Math.PI * cutoffFrequency);
         float alpha = dt / (rc + dt);
+        
 
         // Filtre passe-bas : y[n] = alpha * x[n] + (1 - alpha) * y[n-1]
         float previous = samples[0];
