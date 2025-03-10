@@ -22,6 +22,7 @@ public class AudioProcessorController : Controller
     public IActionResult Distortion() => View();
     public IActionResult Noise() => View();
     public IActionResult Combined() => View();
+    public IActionResult NoiseReference() => View();
 
     [HttpPost]
     public async Task<IActionResult> ProcessAudio(IFormFile? file, float amplificationLevel)
@@ -111,7 +112,7 @@ public class AudioProcessorController : Controller
             return _fileUtils.HandleProcessingError(ex);
         }
     }
-    // implementation
+    
     [HttpPost]
     public async Task<IActionResult> AmplifyAudio(IFormFile? file, float amplificationLevel)
     {
@@ -162,6 +163,38 @@ public class AudioProcessorController : Controller
             await _fileUtils.SaveUploadedFile(file!, inputPath);
             var processedAudio = await _audioService.NoiseAudio(inputPath,cutoffFrequency);
             return File(processedAudio, AudioContentType, "process_combined.wav");
+        }
+        catch (Exception ex)
+        {
+            return _fileUtils.HandleProcessingError(ex);
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ProcessNoiseWithReference(IFormFile? sourceFile, IFormFile? noiseFile, float noiseReductionFactor = 0.8f)
+    {
+        // Validation du fichier source
+        var sourceValidation = await _fileUtils.ValidateAudioFile(sourceFile);
+        if (sourceValidation != null) return sourceValidation;
+
+        // Validation du fichier de référence de bruit
+        var noiseValidation = await _fileUtils.ValidateAudioFile(noiseFile);
+        if (noiseValidation != null) return noiseValidation;
+
+        try
+        {
+            var (sourcePath, noisePath) = _fileUtils.CreateTempFilePaths("noise_ref");
+            
+            // Utilisation de using pour assurer la suppression des fichiers temporaires
+            await using (var sourceTempFile = new TempFile(sourcePath))
+            await using (var noiseTempFile = new TempFile(noisePath))
+            {
+                await _fileUtils.SaveUploadedFile(sourceFile!, sourcePath);
+                await _fileUtils.SaveUploadedFile(noiseFile!, noisePath);
+
+                var processedAudio = await _audioService.NoiseReductionWithReference(sourcePath, noisePath, noiseReductionFactor);
+                return File(processedAudio, AudioContentType, "noise_reduced_ref.wav");
+            }
         }
         catch (Exception ex)
         {
