@@ -153,5 +153,36 @@ public class AudioProcessingService
             }
         }
     }
-    
+
+    public async Task<byte[]> NoiseReductionWithReference(string inputPath, string noisePath, float noiseReductionFactor = 0.8f)
+    {
+        var outputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}_noise_reduced.wav");
+        try
+        {
+            // Lecture du fichier source
+            AudioFile sourceFile = new AudioFile(inputPath);
+            (var sourceSamples, var sourceReadSamples, WaveFormat sourceWaveFormat) = sourceFile.ReadSamples();
+
+            // Lecture du fichier de référence de bruit
+            AudioFile noiseFile = new AudioFile(noisePath);
+            (var noiseSamples, var noiseReadSamples, _) = noiseFile.ReadSamples();
+
+            // Calcul du nombre d'échantillons à traiter (minimum entre les deux fichiers)
+            int samplesToProcess = Math.Min(sourceReadSamples, noiseReadSamples);
+
+            // Application de la réduction de bruit
+            FixAudio.AntiNoiseWithReference(sourceSamples, noiseSamples, samplesToProcess, noiseReductionFactor);
+
+            // Écriture du résultat
+            AudioFile.WriteSamplesToWav(sourceSamples, samplesToProcess, outputPath, sourceWaveFormat);
+            return await File.ReadAllBytesAsync(outputPath);
+        }
+        finally
+        {
+            if (File.Exists(outputPath))
+            {
+                File.Delete(outputPath);
+            }
+        }
+    }
 }
