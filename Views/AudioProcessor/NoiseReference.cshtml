@@ -1,0 +1,248 @@
+@{
+    ViewData["Title"] = "Noise Reduction with Reference";
+}
+<div class="flex flex-col justify-center min-h-screen py-6 bg-gray-100 sm:py-12">
+    <div class="relative py-3 sm:max-w-xl sm:mx-auto">
+        <div class="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
+            <div class="max-w-md mx-auto">
+                <div class="divide-y divide-gray-200">
+                    <div class="py-8 space-y-4 text-base leading-6 text-gray-700 sm:text-lg sm:leading-7">
+                        <h1 class="mb-8 text-3xl font-bold text-indigo-600">Noise Reduction with Reference</h1>
+                        
+                        <p class="mb-6 text-sm text-gray-600">
+                            Upload your audio file and a noise reference file to reduce specific noise patterns. 
+                            The noise reference should be a recording of the noise without any desired audio.
+                        </p>
+                        
+                        <form id="uploadForm" class="space-y-6" enctype="multipart/form-data">
+                            <!-- Zone de drop pour le fichier source -->
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-700">
+                                    Source Audio File
+                                </label>
+                                <div class="flex justify-center px-6 pt-5 pb-6 transition-colors duration-200 border-2 border-gray-300 border-dashed rounded-lg hover:border-indigo-500" id="sourceDropZone">
+                                    <div class="space-y-1 text-center">
+                                        <svg class="w-12 h-12 mx-auto text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                            <path d="M24 32V16m0 0l-8 8m8-8l8 8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <div class="flex text-sm text-gray-600">
+                                            <label for="source-upload" class="relative font-medium text-indigo-600 bg-white rounded-md cursor-pointer hover:text-indigo-500 focus-within:outline-none">
+                                                <span>Upload audio</span>
+                                                <input id="source-upload" name="sourceFile" type="file" class="sr-only" accept=".wav" required>
+                                            </label>
+                                            <p class="pl-1">or drag and drop</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500">WAV files only</p>
+                                    </div>
+                                </div>
+                                <p id="sourceFileName" class="mt-2 text-sm text-gray-500"></p>
+                            </div>
+
+                            <!-- Zone de drop pour le fichier de référence de bruit -->
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-700">
+                                    Noise Reference File
+                                </label>
+                                <div class="flex justify-center px-6 pt-5 pb-6 transition-colors duration-200 border-2 border-gray-300 border-dashed rounded-lg hover:border-indigo-500" id="noiseDropZone">
+                                    <div class="space-y-1 text-center">
+                                        <svg class="w-12 h-12 mx-auto text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                            <path d="M24 32V16m0 0l-8 8m8-8l8 8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <div class="flex text-sm text-gray-600">
+                                            <label for="noise-upload" class="relative font-medium text-indigo-600 bg-white rounded-md cursor-pointer hover:text-indigo-500 focus-within:outline-none">
+                                                <span>Upload reference</span>
+                                                <input id="noise-upload" name="noiseFile" type="file" class="sr-only" accept=".wav" required>
+                                            </label>
+                                            <p class="pl-1">or drag and drop</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500">WAV files only</p>
+                                    </div>
+                                </div>
+                                <p id="noiseFileName" class="mt-2 text-sm text-gray-500"></p>
+                            </div>
+
+                            <!-- Contrôle du facteur de réduction de bruit -->
+                            <div class="space-y-4">
+                                <label class="block text-sm font-medium text-gray-700">
+                                    Noise Reduction Factor
+                                    <span id="reductionValue" class="ml-2 text-indigo-600">0.8</span>
+                                </label>
+                                <input type="range" 
+                                       id="noiseReductionFactor" 
+                                       name="noiseReductionFactor" 
+                                       min="0.1" 
+                                       max="1.0" 
+                                       step="0.05" 
+                                       value="0.8"
+                                       class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                <p class="text-xs text-gray-500">Higher values mean stronger noise reduction</p>
+                            </div>
+
+                            <!-- Bouton de traitement -->
+                            <button type="submit" 
+                                    class="flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Process Audio
+                            </button>
+                        </form>
+
+                        <!-- Zone de statut -->
+                        <div id="status" class="hidden p-4 mt-4 rounded-md">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg id="statusIcon" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p id="statusMessage" class="text-sm font-medium"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('uploadForm');
+            const sourceInput = document.getElementById('source-upload');
+            const noiseInput = document.getElementById('noise-upload');
+            const reductionSlider = document.getElementById('noiseReductionFactor');
+            const reductionValue = document.getElementById('reductionValue');
+            const status = document.getElementById('status');
+            const statusMessage = document.getElementById('statusMessage');
+            const statusIcon = document.getElementById('statusIcon');
+            const sourceDropZone = document.getElementById('sourceDropZone');
+            const noiseDropZone = document.getElementById('noiseDropZone');
+            const sourceFileName = document.getElementById('sourceFileName');
+            const noiseFileName = document.getElementById('noiseFileName');
+
+            // Mise à jour de la valeur du facteur de réduction
+            reductionSlider.addEventListener('input', function() {
+                reductionValue.textContent = this.value;
+            });
+
+            // Configure drag and drop for source file
+            setupDropZone(sourceDropZone, sourceInput, sourceFileName);
+            
+            // Configure drag and drop for noise file
+            setupDropZone(noiseDropZone, noiseInput, noiseFileName);
+            
+            // File input change handlers
+            sourceInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    sourceFileName.textContent = `Selected file: ${this.files[0].name}`;
+                }
+            });
+            
+            noiseInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    noiseFileName.textContent = `Selected file: ${this.files[0].name}`;
+                }
+            });
+
+            // Helper function to set up drag and drop
+            function setupDropZone(dropZone, fileInput, fileNameElement) {
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, preventDefaults, false);
+                });
+
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, () => {
+                        dropZone.classList.add('border-indigo-500', 'bg-indigo-50');
+                    }, false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, () => {
+                        dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
+                    }, false);
+                });
+
+                dropZone.addEventListener('drop', (e) => {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    if (files.length > 0) {
+                        fileInput.files = files;
+                        fileNameElement.textContent = `Selected file: ${files[0].name}`;
+                    }
+                }, false);
+            }
+
+            // Gestion du formulaire
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Validate file inputs
+                if (!sourceInput.files.length || !noiseInput.files.length) {
+                    showStatus('error', 'Please select both source and noise reference files.');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('sourceFile', sourceInput.files[0]);
+                formData.append('noiseFile', noiseInput.files[0]);
+                formData.append('noiseReductionFactor', reductionSlider.value);
+
+                try {
+                    showStatus('processing', 'Processing audio files...');
+
+                    const response = await fetch('/AudioProcessor/ProcessNoiseWithReference', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'noise_reduced_ref.wav';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+
+                        showStatus('success', 'Audio processed successfully!');
+                    } else {
+                        throw new Error('Processing failed');
+                    }
+                } catch (error) {
+                    showStatus('error', 'Error processing audio file. Please try again.');
+                }
+            });
+            
+            // Helper for status updates
+            function showStatus(type, message) {
+                status.classList.remove('hidden', 'bg-blue-50', 'bg-green-50', 'bg-red-50');
+                statusIcon.classList.remove('text-blue-400', 'text-green-400', 'text-red-400');
+                
+                switch(type) {
+                    case 'processing':
+                        status.classList.add('bg-blue-50');
+                        statusIcon.classList.add('text-blue-400');
+                        break;
+                    case 'success':
+                        status.classList.add('bg-green-50');
+                        statusIcon.classList.add('text-green-400');
+                        break;
+                    case 'error':
+                        status.classList.add('bg-red-50');
+                        statusIcon.classList.add('text-red-400');
+                        break;
+                }
+                
+                statusMessage.textContent = message;
+            }
+        });
+    </script>
+}
